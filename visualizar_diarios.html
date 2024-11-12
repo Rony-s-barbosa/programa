@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Diários de Diabetes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #6a1b9a;
+            margin-bottom: 20px;
+        }
+
+        .diario-item {
+            background-color: #f3f3f3;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .diario-item strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .status.baixo {
+            color: red;
+        }
+
+        .status.normal {
+            color: green;
+        }
+
+        .status.alto {
+            color: orange;
+        }
+
+        button {
+            background-color: #8e24aa;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #6a1b9a;
+        }
+
+        /* Animação de FadeIn */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+        }
+
+        .filter-container select,
+        .filter-container input {
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+        }
+
+        .filter-container button {
+            background-color: #6a1b9a;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Registros de Diários de Diabetes</h2>
+        
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="date" id="filterDate" placeholder="Filtrar por data" />
+            <select id="filterStatus">
+                <option value="">Filtrar por status</option>
+                <option value="baixo">Baixo</option>
+                <option value="normal">Normal</option>
+                <option value="alto">Alto</option>
+            </select>
+            <button onclick="applyFilters()">Aplicar Filtro</button>
+        </div>
+
+        <div id="diarioList"></div>
+        <div id="feedback" style="color: green; display: none; text-align: center; margin-top: 20px;">
+            Registros carregados com sucesso!
+        </div>
+
+        <!-- Botão de Limpar Tudo -->
+        <button id="clearBtn">Limpar Tudo</button>
+    </div>
+
+    <script>
+        // Função para classificar a glicose
+        function classificarGlicose(glicose) {
+            if (glicose < 70) {
+                return 'baixo';
+            } else if (glicose >= 70 && glicose <= 140) {
+                return 'normal';
+            } else {
+                return 'alto';
+            }
+        }
+
+        // Carregar os registros de diários
+        function loadDiarios() {
+            const diarios = JSON.parse(localStorage.getItem('diarios')) || [];
+            const diarioList = document.getElementById('diarioList');
+            diarioList.innerHTML = '';
+
+            if (diarios.length === 0) {
+                diarioList.innerHTML = '<p>Nenhum diário registrado ainda.</p>';
+            } else {
+                diarios.forEach((diario) => {
+                    const diarioItem = document.createElement('div');
+                    diarioItem.className = 'diario-item';
+
+                    // Adicionar informações do diário para cada hora
+                    const horarios = [
+                        { hora: '7h', glicose: diario.glicose7h, observacao: diario.observacao7h },
+                        { hora: '9h', glicose: diario.glicose9h, observacao: diario.observacao9h },
+                        { hora: '12h', glicose: diario.glicose12h, observacao: diario.observacao12h },
+                        { hora: '14h', glicose: diario.glicose14h, observacao: diario.observacao14h },
+                        { hora: '17h', glicose: diario.glicose17h, observacao: diario.observacao17h },
+                        { hora: '20h', glicose: diario.glicose20h, observacao: diario.observacao20h }
+                    ];
+
+                    let diarioHTML = `<strong>Data: ${diario.data}</strong>`;
+
+                    horarios.forEach(h => {
+                        diarioHTML += `
+                            <div><strong>${h.hora} - Glicose: ${h.glicose} | Status: <span class="status ${classificarGlicose(h.glicose)}">${classificarGlicose(h.glicose)}</span></strong></div>
+                            <div>Observação: ${h.observacao}</div>
+                        `;
+                    });
+
+                    diarioItem.innerHTML = diarioHTML;
+                    diarioList.appendChild(diarioItem);
+                });
+
+                document.getElementById('feedback').style.display = 'block';
+            }
+        }
+
+        // Função para aplicar filtros
+        function applyFilters() {
+            const filterDate = document.getElementById('filterDate').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            let diarios = JSON.parse(localStorage.getItem('diarios')) || [];
+            const filteredDiarios = diarios.filter(diario => {
+                const dateMatch = filterDate ? diario.data === filterDate : true;
+                const statusMatch = filterStatus ? (
+                    classificarGlicose(diario.glicose7h) === filterStatus ||
+                    classificarGlicose(diario.glicose9h) === filterStatus ||
+                    classificarGlicose(diario.glicose12h) === filterStatus ||
+                    classificarGlicose(diario.glicose14h) === filterStatus ||
+                    classificarGlicose(diario.glicose17h) === filterStatus ||
+                    classificarGlicose(diario.glicose20h) === filterStatus
+                ) : true;
+                return dateMatch && statusMatch;
+            });
+
+            // Recarregar os diários filtrados
+            const diarioList = document.getElementById('diarioList');
+            diarioList.innerHTML = '';
+            if (filteredDiarios.length === 0) {
+                diarioList.innerHTML = '<p>Não há registros que correspondem ao filtro.</p>';
+            } else {
+                filteredDiarios.forEach((diario) => {
+                    const diarioItem = document.createElement('div');
+                    diarioItem.className = 'diario-item';
+
+                    // Adicionar informações do diário para cada hora
+                    const horarios = [
+                        { hora: '7h', glicose: diario.glicose7h, observacao: diario.observacao7h },
+                        { hora: '9h', glicose: diario.glicose9h, observacao: diario.observacao9h },
+                        { hora: '12h', glicose: diario.glicose12h, observacao: diario.observacao12h },
+                        { hora: '14h', glicose: diario.glicose14h, observacao: diario.observacao14h },
+                        { hora: '17h', glicose: diario.glicose17h, observacao: diario.observacao17h },
+                        { hora: '20h', glicose: diario.glicose20h, observacao: diario.observacao20h }
+                    ];
+
+                    let diarioHTML = `<strong>Data: ${diario.data}</strong>`;
+
+                    horarios.forEach(h => {
+                        diarioHTML += `
+                            <div><strong>${h.hora} - Glicose: ${h.glicose} | Status: <span class="status ${classificarGlicose(h.glicose)}">${classificarGlicose(h.glicose)}</span></strong></div>
+                            <div>Observação: ${h.observacao}</div>
+                        `;
+                    });
+
+                    diarioItem.innerHTML = diarioHTML;
+                    diarioList.appendChild(diarioItem);
+                });
+            }
+        }
+
+        // Função para limpar todos os registros
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Tem certeza de que deseja excluir todos os registros?')) {
+                localStorage.removeItem('diarios');
+                loadDiarios(); // Recarregar os diários após a limpeza
+            }
+        });
+
+        // Carregar diários ao iniciar
+        loadDiarios();
+    </script>
+</body>
+</html>

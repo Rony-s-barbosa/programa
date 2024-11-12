@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diário - Diabetes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #6a1b9a, #8e24aa);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #6a1b9a;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+            color: #333;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color: #8e24aa;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #6a1b9a;
+        }
+
+        .footer-btn {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer-btn a {
+            color: #6a1b9a;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .footer-btn a:hover {
+            text-decoration: underline;
+        }
+
+        .feedback {
+            font-size: 16px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e8f5e9;
+            color: green;
+            display: none;
+        }
+
+        .diario-list {
+            margin-top: 30px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .diario-item {
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .glicose-status {
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .normal {
+            background-color: #e8f5e9;
+            color: green;
+        }
+
+        .baixo {
+            background-color: #ffebee;
+            color: red;
+        }
+
+        .alto {
+            background-color: #fff3e0;
+            color: orange;
+        }
+
+        .delete-btn {
+            background-color: #ff1744;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            background-color: #d50000;
+        }
+
+        .time-slot {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bem-vindo ao seu Diário de Diabetes</h2>
+        <p id="usuarioInfo"></p>
+
+        <form id="diarioForm">
+            <label for="data">Data:</label>
+            <input type="date" id="data" name="data" required />
+
+            <div class="time-slot">
+                <label for="glicose7h">7h (Café da Manhã):</label>
+                <input type="number" id="glicose7h" name="glicose7h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose7h', 'status7h')" />
+                <textarea id="observacao7h" name="observacao7h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status7h" class="glicose-status"></div>
+            </div>
+
+            <div class="time-slot">
+                <label for="glicose9h">9h (Lanche da Manhã):</label>
+                <input type="number" id="glicose9h" name="glicose9h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose9h', 'status9h')" />
+                <textarea id="observacao9h" name="observacao9h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status9h" class="glicose-status"></div>
+            </div>
+
+            <div class="time-slot">
+                <label for="glicose12h">12h (Almoço):</label>
+                <input type="number" id="glicose12h" name="glicose12h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose12h', 'status12h')" />
+                <textarea id="observacao12h" name="observacao12h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status12h" class="glicose-status"></div>
+            </div>
+
+            <div class="time-slot">
+                <label for="glicose14h">14h (Lanche da Tarde):</label>
+                <input type="number" id="glicose14h" name="glicose14h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose14h', 'status14h')" />
+                <textarea id="observacao14h" name="observacao14h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status14h" class="glicose-status"></div>
+            </div>
+
+            <div class="time-slot">
+                <label for="glicose17h">17h (Jantar):</label>
+                <input type="number" id="glicose17h" name="glicose17h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose17h', 'status17h')" />
+                <textarea id="observacao17h" name="observacao17h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status17h" class="glicose-status"></div>
+            </div>
+
+            <div class="time-slot">
+                <label for="glicose20h">20h (Lanche da Noite):</label>
+                <input type="number" id="glicose20h" name="glicose20h" placeholder="Nível de Glicose" min="0" oninput="atualizarStatus('glicose20h', 'status20h')" />
+                <textarea id="observacao20h" name="observacao20h" rows="2" placeholder="Observações..."></textarea>
+                <div id="status20h" class="glicose-status"></div>
+            </div>
+
+            <button type="submit">Salvar Diário</button>
+        </form>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="diario-list" id="diarioList"></div>
+
+        <div class="footer-btn">
+            <button id="logoutBtn">Sair</button>
+        </div>
+    </div>
+
+    <script>
+        // Exibir informações do usuário logado
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+
+        if (usuario) {
+            document.getElementById('usuarioInfo').innerHTML = `
+                Olá, ${usuario.nome}!<br>
+                
+            `;
+        } else {
+            window.location.href = 'login.html'; // Redireciona para o login
+        }
+
+        // Função para classificar glicose
+        function classificarGlicose(glicose) {
+            if (glicose < 70) {
+                return 'baixo';
+            } else if (glicose >= 70 && glicose <= 180) {
+                return 'normal';
+            } else {
+                return 'alto';
+            }
+        }
+
+        // Atualizar status da glicose
+        function atualizarStatus(glicoseInputId, statusDivId) {
+            const glicoseValor = document.getElementById(glicoseInputId).value;
+            const statusDiv = document.getElementById(statusDivId);
+
+            if (glicoseValor !== '') {
+                const status = classificarGlicose(parseFloat(glicoseValor));
+                statusDiv.className = `glicose-status ${status}`;
+                statusDiv.textContent = `Glicose está ${status}`;
+            } else {
+                statusDiv.className = '';
+                statusDiv.textContent = '';
+            }
+        }
+
+        // Função para salvar as informações do diário
+        document.getElementById('diarioForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const data = document.getElementById('data').value;
+            const glicose7h = document.getElementById('glicose7h').value;
+            const observacao7h = document.getElementById('observacao7h').value;
+            const glicose9h = document.getElementById('glicose9h').value;
+            const observacao9h = document.getElementById('observacao9h').value;
+            const glicose12h = document.getElementById('glicose12h').value;
+            const observacao12h = document.getElementById('observacao12h').value;
+            const glicose14h = document.getElementById('glicose14h').value;
+            const observacao14h = document.getElementById('observacao14h').value;
+            const glicose17h = document.getElementById('glicose17h').value;
+            const observacao17h = document.getElementById('observacao17h').value;
+            const glicose20h = document.getElementById('glicose20h').value;
+            const observacao20h = document.getElementById('observacao20h').value;
+
+            const diario = {
+                data,
+                glicose7h, observacao7h,
+                glicose9h, observacao9h,
+                glicose12h, observacao12h,
+                glicose14h, observacao14h,
+                glicose17h, observacao17h,
+                glicose20h, observacao20h
+            };
+
+            let diarios = JSON.parse(localStorage.getItem('diarios')) || [];
+            diarios.push(diario);
+            localStorage.setItem('diarios', JSON.stringify(diarios));
+
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = "Diário salvo com sucesso!";
+            feedback.style.display = "block";
+
+            document.getElementById('diarioForm').reset();
+            loadDiarios();
+        });
+
+        // Carregar diários ao iniciar
+        function loadDiarios() {
+            const diarios = JSON.parse(localStorage.getItem('diarios')) || [];
+            const diarioList = document.getElementById('diarioList');
+            diarioList.innerHTML = '';
+
+            diarios.forEach((diario, index) => {
+                const diarioItem = document.createElement('div');
+                diarioItem.className = 'diario-item';
+                diarioItem.innerHTML = `
+                    <strong>${diario.data}</strong>
+                    <button class="delete-btn" onclick="deleteDiario(${index})">Excluir</button>
+                `;
+                diarioList.appendChild(diarioItem);
+            });
+        }
+
+        // Excluir diário
+        function deleteDiario(index) {
+            let diarios = JSON.parse(localStorage.getItem('diarios')) || [];
+            diarios.splice(index, 1);
+            localStorage.setItem('diarios', JSON.stringify(diarios));
+            loadDiarios();
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('usuario'); // Limpar usuário logado
+            window.location.href = 'login.html'; // Redireciona para login
+        });
+
+        // Carregar diários ao iniciar
+        loadDiarios();
+    </script>
+</body>
+</html>
